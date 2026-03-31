@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>TODO App</title>
+    <style>
+        body { font-family: Arial; max-width: 600px; margin: 50px auto; }
+        input { padding: 8px; width: 70%; }
+        button { padding: 8px 16px; background: #007bff; color: white; border: none; cursor: pointer; }
+        li { padding: 8px; margin: 5px 0; background: #f5f5f5; display: flex; justify-content: space-between; }
+        .del { background: red; color: white; border: none; cursor: pointer; padding: 4px 8px; }
+    </style>
+</head>
+<body>
+    <h1>TODO List</h1>
+    <input type="text" id="taskInput" placeholder="Enter a new task...">
+    <button onclick="addTask()">Add</button>
+    <ul id="taskList"></ul>
+
+    <script>
+        async function loadTasks() {
+            const res = await fetch('/tasks');
+            const tasks = await res.json();
+            const list = document.getElementById('taskList');
+            list.innerHTML = '';
+            tasks.forEach(task => {
+                list.innerHTML += `<li>${task.title} <button class="del" onclick="deleteTask(${task.id})">Delete</button></li>`;
+            });
+        }
+
+        async function addTask() {
+            const title = document.getElementById('taskInput').value;
+            if (!title) return;
+            await fetch('/tasks', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({title})
+            });
+            document.getElementById('taskInput').value = '';
+            loadTasks();
+        }
+
+        async function deleteTask(id) {
+            await fetch(`/tasks/${id}`, { method: 'DELETE' });
+            loadTasks();
+        }
+
+        loadTasks();
+    </script>
+</body>
+</html>
